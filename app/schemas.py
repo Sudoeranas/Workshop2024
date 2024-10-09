@@ -34,6 +34,24 @@ class ExerciceResponse(ExerciceBase):
 
     class Config:
         orm_mode = True
+        
+class UserExerciceCreate(BaseModel):
+    user_id: int
+    exercice_id: int
+    date: date
+    Optional: bool = False
+    Checked: bool = False
+
+class UserExerciceResponse(BaseModel):
+    id: int
+    user_id: int
+    exercice_id: int
+    date: date
+    Optional: bool
+    Checked: bool
+
+    class Config:
+        orm_mode = True
 
 class Token(BaseModel):
     access_token: str

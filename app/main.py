@@ -163,3 +163,28 @@ def get_exercice_by_id(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Exercice not found")
     
     return exercice
+
+# Route POST /userexercice/ pour ajouter un exercice à un utilisateur
+@app.post("/userexercice/", response_model=schemas.UserExerciceResponse)
+def create_user_exercice(user_exercice: schemas.UserExerciceCreate, db: Session = Depends(get_db)):
+    new_user_exercice = models.UserExercice(
+        user_id=user_exercice.user_id,
+        exercice_id=user_exercice.exercice_id,
+        date=user_exercice.date,
+        Optional=user_exercice.Optional,
+        Checked=user_exercice.Checked
+    )
+    db.add(new_user_exercice)
+    db.commit()
+    db.refresh(new_user_exercice)
+    return new_user_exercice
+
+# Route GET /userexercice/{user_id} pour obtenir tous les exercices d'un utilisateur spécifique
+@app.get("/userexercice/{user_id}", response_model=list[schemas.UserExerciceResponse])
+def get_user_exercices(user_id: int, db: Session = Depends(get_db)):
+    user_exercices = db.query(models.UserExercice).filter(models.UserExercice.user_id == user_id).all()
+    
+    if not user_exercices:
+        raise HTTPException(status_code=404, detail="No exercises found for this user")
+    
+    return user_exercices
