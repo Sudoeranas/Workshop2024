@@ -1,5 +1,6 @@
 # app/main.py
-from datetime import timedelta
+from datetime import date, timedelta
+from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
@@ -180,11 +181,24 @@ def create_user_exercice(user_exercice: schemas.UserExerciceCreate, db: Session 
     return new_user_exercice
 
 # Route GET /userexercice/{user_id} pour obtenir tous les exercices d'un utilisateur spécifique
-@app.get("/userexercice/{user_id}", response_model=list[schemas.UserExerciceResponse])
-def get_user_exercices(user_id: int, db: Session = Depends(get_db)):
-    user_exercices = db.query(models.UserExercice).filter(models.UserExercice.user_id == user_id).all()
-    
+@app.get("/userexercice/{user_id}")
+def read_user_exercises_by_id(
+    user_id: int,
+    date: Optional[date] = None,  # Ajout du paramètre de requête pour la date
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.UserExercice).filter(models.UserExercice.user_id == user_id)
+
+    # Si une date est fournie, filtrer par date
+    if date:
+        query = query.filter(models.UserExercice.date == date)
+
+    user_exercices = query.all()
+
     if not user_exercices:
-        raise HTTPException(status_code=404, detail="No exercises found for this user")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucun exercice trouvé pour cet utilisateur"
+        )
     
-    return user_exercices
+    return user_exercices  # Renvoie la liste des exercices de l'utilisateur
