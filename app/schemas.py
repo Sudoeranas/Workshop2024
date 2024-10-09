@@ -44,3 +44,16 @@ class TokenData(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+    
+# HealthConditionResponseclass 
+class HealthConditionBase(BaseModel):
+    id: int
+    name: str
+    description: str
+
+    class Config:
+        orm_mode = True
+
+class HealthConditionCreate(BaseModel):
+    name: str
+    description: str

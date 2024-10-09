@@ -44,31 +44,27 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 # Route pour obtenir un token JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-@app.post("/token", response_model=schemas.Token)
-def login_for_access_token(login_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    # Utilisation de l'email et du mot de passe pour authentifier
-    user = authenticate_user(db, login_data.email, login_data.password)
-    
+@app.post("/token")
+def login_for_access_token():
+    # Simuler une réponse de connexion sans authentification
+    return {"access_token": "no-token-needed", "token_type": "none"}
+
+# Exemple d'une route qui n'utilise plus de tokens
+@app.get("/users/{user_id}")
+def read_user_by_id(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
         )
-    
-    # Crée un token d'accès qui expire dans un certain temps
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": str(user.id)}, expires_delta=access_token_expires
-    )
-    
-    # Retourne le token d'accès et le type
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"id": user.id, "email": user.email, "nom": user.Nom, "Prenom" : user.Prenom, "role" : user.role, "kine" : user.id_kine}  # Renvoie les informations que tu veux
 
-# Route pour obtenir les informations de l'utilisateur authentifié
-@app.get("/users/me/", response_model=schemas.UserResponse)
-def read_users_me(current_user: models.User = Depends(get_current_user)):
-    return current_user
+@app.get("/items/")
+def read_items():
+    # Simplement retourner les items sans vérifier de token
+    return {"items": ["item1", "item2"]}
+
 
 # Route GET /users
 @app.get("/users", response_model=list[schemas.UserResponse])
@@ -78,13 +74,16 @@ def get_users(db: Session = Depends(get_db), current_user: models.User = Depends
 
 # Route GET /exercices
 @app.get("/exercices", response_model=list[schemas.ExerciceResponse])
-def get_exercices(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_exercices(db: Session = Depends(get_db)):
+    # Récupérer tous les exercices sans authentification
     exercices = db.query(models.Exercice).all()
     return exercices
 
+
 # Route POST /exercices pour ajouter un nouvel exercice
 @app.post("/exercices/", response_model=schemas.ExerciceResponse)
-def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_db)):
+    # Créer un nouvel exercice sans authentification
     new_exercice = models.Exercice(
         Nom_exo=exercice.Nom_exo,
         description=exercice.description,
@@ -95,3 +94,72 @@ def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_
     db.commit()
     db.refresh(new_exercice)
     return new_exercice
+
+# Endpoint de login sans gestion de tokens
+@app.post("/login")
+def login(email: str, password: str, db: Session = Depends(database.get_db)):
+    user = authenticate_user(db, email, password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou mot de passe incorrect",
+        )
+    return {"message": "Connexion réussie", "user_id": user.id, "role" : user.role}
+
+@app.get("/users/{user_id}/healthconditions", response_model=list[schemas.HealthConditionBase])
+def get_healthconditions_for_user(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Récupérer les conditions de santé de cet utilisateur
+    healthconditions = db.query(models.HealthCondition).filter(models.HealthCondition.user_id == user_id).all()
+    
+    if not healthconditions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucune condition de santé trouvée pour cet utilisateur"
+        )
+    
+    return healthconditions
+
+@app.post("/users/{user_id}/healthconditions", response_model=schemas.HealthConditionBase)
+def create_healthcondition_for_user(
+    user_id: int, 
+    healthcondition: schemas.HealthConditionCreate, 
+    db: Session = Depends(database.get_db)
+):
+    # Vérifier si l'utilisateur existe
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Créer une nouvelle condition de santé pour cet utilisateur
+    new_healthcondition = models.HealthCondition(
+        name=healthcondition.name,
+        description=healthcondition.description,
+        user_id=user_id  # Lier la condition à l'utilisateur via user_id
+    )
+    
+    db.add(new_healthcondition)
+    db.commit()
+    db.refresh(new_healthcondition)
+    
+    return new_healthcondition
+
+@app.get("/exercices/{id}", response_model=schemas.ExerciceResponse)
+def get_exercice_by_id(id: int, db: Session = Depends(get_db)):
+    exercice = db.query(models.Exercice).filter(models.Exercice.id_exercice == id).first()
+    
+    if not exercice:
+        raise HTTPException(status_code=404, detail="Exercice not found")
+    
+    return exercice

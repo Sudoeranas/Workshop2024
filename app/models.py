@@ -3,14 +3,20 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from .database import Base
 
+# Modèle HealthCondition
 class HealthCondition(Base):
     __tablename__ = "healthconditions"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, index=True)
     description = Column(String(255))
-    users = relationship("User", back_populates="healthconditions")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    
+    # Préciser la clé étrangère à utiliser pour lever l'ambiguïté
+    user = relationship("User", back_populates="healthconditions", foreign_keys=[user_id])
 
+
+# Modèle User
 class User(Base):
     __tablename__ = "users"
 
@@ -22,10 +28,11 @@ class User(Base):
     role = Column(String(50))
     health_conditions_id = Column(Integer, ForeignKey("healthconditions.id"))
     id_kine = Column(Integer, nullable=True)
-    # Relation entre les utilisateurs et les conditions de santé
-    healthconditions = relationship("HealthCondition", back_populates="users")
-    user_exercices = relationship("UserExercice", back_populates="user")
 
+    # Relation inversée
+    healthconditions = relationship("HealthCondition", back_populates="user", foreign_keys=[HealthCondition.user_id])
+
+    user_exercices = relationship("UserExercice", back_populates="user")
 class Exercice(Base):
     __tablename__ = "exercices"
 
