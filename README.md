@@ -4,7 +4,7 @@ WORKSHOP 2024 GROUPE 11
 D'abord installez les requirements : 
 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 et après démarrez l'appli
 ```
