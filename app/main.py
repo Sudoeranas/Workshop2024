@@ -1,7 +1,7 @@
 # app/main.py
 from datetime import date, timedelta
 from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from . import models, schemas, database, auth
@@ -17,7 +17,7 @@ app = FastAPI()
 # Définissez les origines autorisées (domaines frontend)
 origins = [
     "http://localhost:3000",  # Exemple : frontend local
-    "http://localhost:8080",  # Si vous avez un autre frontend sur un autre port
+    "http://localhost:8000",  # Si vous avez un autre frontend sur un autre port
     "https://monfrontend.com",  # Exemple : frontend déployé en production
 ]
 
@@ -115,14 +115,35 @@ def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_
 
 # Endpoint de login sans gestion de tokens
 @app.post("/login")
-def login(email: str, password: str, db: Session = Depends(database.get_db)):
+def login(
+    email: str = None, 
+    password: str = None, 
+    request: Request = None, 
+    db: Session = Depends(database.get_db)
+):
+    # Priorité aux headers si présents
+    if email is None:
+        email = request.headers.get("email")
+    if password is None:
+        password = request.headers.get("password")
+    
+    # Vérification si email et password sont bien présents
+    if not email or not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email et mot de passe sont requis"
+        )
+
+    # Authentification de l'utilisateur
     user = authenticate_user(db, email, password)
+    
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect",
         )
-    return {"message": "Connexion réussie", "user_id": user.id, "role" : user.role}
+    
+    return {"message": "Connexion réussie", "user_id": user.id, "role": user.role}
 
 @app.get("/users/{user_id}/healthconditions", response_model=list[schemas.HealthConditionBase])
 def get_healthconditions_for_user(user_id: int, db: Session = Depends(database.get_db)):
