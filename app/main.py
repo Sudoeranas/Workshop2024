@@ -2,6 +2,7 @@
 from datetime import date, timedelta
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from . import models, schemas, database, auth
@@ -113,36 +114,24 @@ def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_
     db.refresh(new_exercice)
     return new_exercice
 
-# Endpoint de login sans gestion de tokens
+# Route de connexion qui utilise un body JSON
 @app.post("/login")
 def login(
-    email: str = None, 
-    password: str = None, 
-    request: Request = None, 
+    login_data: schemas.LoginRequest,  # Le body est automatiquement converti via LoginRequest
     db: Session = Depends(database.get_db)
 ):
-    # Priorité aux headers si présents
-    if email is None:
-        email = request.headers.get("email")
-    if password is None:
-        password = request.headers.get("password")
-    
-    # Vérification si email et password sont bien présents
-    if not email or not password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email et mot de passe sont requis"
-        )
+    email = login_data.email
+    password = login_data.password
 
     # Authentification de l'utilisateur
     user = authenticate_user(db, email, password)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect",
         )
-    
+
     return {"message": "Connexion réussie", "user_id": user.id, "role": user.role}
 
 @app.get("/users/{user_id}/healthconditions", response_model=list[schemas.HealthConditionBase])

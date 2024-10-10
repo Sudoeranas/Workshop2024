@@ -75,3 +75,8 @@ class HealthConditionBase(BaseModel):
 class HealthConditionCreate(BaseModel):
     name: str
     description: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
