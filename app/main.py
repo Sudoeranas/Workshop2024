@@ -7,11 +7,28 @@ from fastapi.security import OAuth2PasswordRequestForm
 from . import models, schemas, database, auth
 from .auth import create_access_token, get_password_hash, authenticate_user, get_current_user
 from .database import engine
+from fastapi.middleware.cors import CORSMiddleware
 
 # Crée les tables de la base de données
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Définissez les origines autorisées (domaines frontend)
+origins = [
+    "http://localhost:3000",  # Exemple : frontend local
+    "http://localhost:8080",  # Si vous avez un autre frontend sur un autre port
+    "https://monfrontend.com",  # Exemple : frontend déployé en production
+]
+
+# Ajoutez le middleware CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Permet uniquement les origines spécifiées
+    allow_credentials=True,  # Autorise l'envoi des cookies ou des identifiants
+    allow_methods=["*"],  # Autorise toutes les méthodes HTTP (GET, POST, etc.)
+    allow_headers=["*"],  # Autorise tous les en-têtes
+)
 
 # Dependency pour obtenir une session DB
 def get_db():
