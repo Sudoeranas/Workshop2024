@@ -15,11 +15,11 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Définissez les origines autorisées (domaines frontend)
+# Configurer CORS
 origins = [
-    "http://localhost:3000",  # Exemple : frontend local
-    "http://localhost:8000",  # Si vous avez un autre frontend sur un autre port
-    "https://monfrontend.com",  # Exemple : frontend déployé en production
+    "http://localhost:5173",  # Remplace par l'URL de ton frontend
+    "http://127.0.0.1:5173",  # Inclure aussi cette adresse
+    # Ajoute d'autres origines si nécessaire
 ]
 
 # Ajoutez le middleware CORS
@@ -87,7 +87,7 @@ def read_items():
 
 # Route GET /users
 @app.get("/users", response_model=list[schemas.UserResponse])
-def get_users(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
