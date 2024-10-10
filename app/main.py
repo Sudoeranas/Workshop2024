@@ -87,8 +87,14 @@ def read_items():
 
 # Route GET /users
 @app.get("/users", response_model=list[schemas.UserResponse])
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(models.User).all()
+def get_users(db: Session = Depends(get_db), id_kine: Optional[str] = None):
+    query = db.query(models.User)
+
+    # Filtre par rôle si le paramètre est présent
+    if id_kine:
+        query = query.filter(models.User.id_kine == id_kine)
+
+    users = query.all()
     return users
 
 # Route GET /exercices
