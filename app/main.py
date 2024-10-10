@@ -132,7 +132,7 @@ def login(
             detail="Email ou mot de passe incorrect",
         )
 
-    return {"message": "Connexion réussie", "user_id": user.id, "role": user.role, "Nom": user.Nom, "Prenom": user.Prenom, "email": user.email}
+    return {"message": "Connexion réussie", "user_id": user.id, "role": user.role, "nom": user.Nom, "prenom": user.Prenom, "email": user.email}
 
 @app.get("/users/{user_id}/healthconditions", response_model=list[schemas.HealthConditionBase])
 def get_healthconditions_for_user(user_id: int, db: Session = Depends(database.get_db)):
