@@ -94,3 +94,5 @@ class ExerciceByUserResponse(BaseModel):
     checked: bool
     series: int
     repetitions: int
+    optional: bool
+    video_id: str

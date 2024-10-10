@@ -144,7 +144,9 @@ def get_exercises_by_user(user_id: int, exercise_date: date, db: Session = Depen
                 "userId": user_exercise.user_id,
                 "checked": user_exercise.Checked,
                 "series": user_exercise.repetitions,
-                "repetitions": user_exercise.series
+                "repetitions": user_exercise.series,
+                "optional": user_exercise.Optional,
+                "video_id": exercise.video_link
             })
 
     return response
