@@ -92,3 +92,5 @@ class ExerciceByUserResponse(BaseModel):
     date: date
     userId: int
     checked: bool
+    series: int
+    repetitions: int

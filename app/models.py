@@ -56,5 +56,6 @@ class UserExercice(Base):
     repetitions = Column(Integer, default=10) 
     user = relationship("User", back_populates="user_exercices")
     exercice = relationship("Exercice", back_populates="user_exercices")
+    
 
 

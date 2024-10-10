@@ -142,7 +142,9 @@ def get_exercises_by_user(user_id: int, exercise_date: date, db: Session = Depen
                 "description": exercise.description,
                 "date": user_exercise.date,
                 "userId": user_exercise.user_id,
-                "checked": user_exercise.Checked  # Ajouter le champ checked
+                "checked": user_exercise.Checked,
+                "series": user_exercise.repetitions,
+                "repetitions": user_exercise.series
             })
 
     return response
