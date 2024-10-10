@@ -120,10 +120,10 @@ def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_
     db.refresh(new_exercice)
     return new_exercice
 
-@app.get("/user/{user_id}/exercises", response_model=list[schemas.ExerciceResponse])  # Réponse sous forme de liste d'exercices
+@app.get("/user/{user_id}/exercises", response_model=list[schemas.ExerciceByUserResponse])  # Réponse sous forme de liste d'exercices
 def get_exercises_by_user(user_id: int, exercise_date: date, db: Session = Depends(get_db)):
     # Récupérer les exercices liés à l'utilisateur
-    user_exercises = db.query(models.UserExercice, models.UserExercice.date == exercise_date).filter(models.UserExercice.user_id == user_id).all()
+    user_exercises = db.query(models.UserExercice).filter(models.UserExercice.user_id == user_id, models.UserExercice.date == exercise_date).all()
     
     # Récupérer les IDs des exercices
     exercice_ids = [user_exercice.exercice_id for user_exercice in user_exercises]
@@ -134,16 +134,15 @@ def get_exercises_by_user(user_id: int, exercise_date: date, db: Session = Depen
     response = []
     for user_exercise in user_exercises:
         # Chercher l'exercice correspondant
-        exercise = next((ex for ex in exercises if ex.id == user_exercise.exercice_id), None)
+        exercise = next((ex for ex in exercises if ex.id_exercice == user_exercise.exercice_id), None)
         if exercise:
             response.append({
-                "id_exercice": exercise.id,
-                "title": exercise.title,
+                "id_exercice": exercise.id_exercice,
+                "Nom_exo": exercise.Nom_exo,
                 "description": exercise.description,
-                "duration": exercise.duration,
                 "date": user_exercise.date,
                 "userId": user_exercise.user_id,
-                "checked": user_exercise.checked  # Ajouter le champ checked
+                "checked": user_exercise.Checked  # Ajouter le champ checked
             })
 
     return response

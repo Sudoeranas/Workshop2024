@@ -84,3 +84,11 @@ class HealthConditionCreate(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class ExerciceByUserResponse(BaseModel):
+    id_exercice: int
+    Nom_exo: str
+    description: str
+    date: date
+    userId: int
+    checked: bool
