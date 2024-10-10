@@ -52,6 +52,7 @@ class UserExercice(Base):
     date = Column(Date)
     Optional = Column(Boolean, default=False)
     Checked = Column(Boolean, default=False)
-
+    series = Column(Integer, default=1)
+    repetitions = Column(Integer, default=10) 
     user = relationship("User", back_populates="user_exercices")
     exercice = relationship("Exercice", back_populates="user_exercices")

@@ -16,7 +16,7 @@ class UserCreate(UserBase):
 
 class UserResponse(UserBase):
     id: int
-    
+
     class Config:
         orm_mode = True
 
@@ -41,6 +41,8 @@ class UserExerciceCreate(BaseModel):
     date: date
     Optional: bool = False
     Checked: bool = False
+    series: int
+    repetitions: int 
 
 class UserExerciceResponse(BaseModel):
     id: int
@@ -49,6 +51,8 @@ class UserExerciceResponse(BaseModel):
     date: date
     Optional: bool
     Checked: bool
+    series: int
+    repetitions: int
 
     class Config:
         orm_mode = True
