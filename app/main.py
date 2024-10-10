@@ -120,6 +120,19 @@ def create_exercice(exercice: schemas.ExerciceCreate, db: Session = Depends(get_
     db.refresh(new_exercice)
     return new_exercice
 
+@app.get("/user/{user_id}/exercises", response_model=list[schemas.ExerciceResponse])  # Réponse sous forme de liste d'exercices
+def get_exercises_by_user(user_id: int, db: Session = Depends(get_db)):
+    # Récupérer les exercices liés à l'utilisateur
+    user_exercises = db.query(models.UserExercice).filter(models.UserExercice.user_id == user_id).all()
+    
+    # Récupérer les IDs des exercices
+    exercice_ids = [user_exercice.exercice_id for user_exercice in user_exercises]
+
+    # Récupérer les informations des exercices correspondants
+    exercises = db.query(models.Exercice).filter(models.Exercice.id_exercice.in_(exercice_ids)).all()
+
+    return exercises
+
 # Route de connexion qui utilise un body JSON
 @app.post("/login")
 def login(
