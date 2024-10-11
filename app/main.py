@@ -143,8 +143,8 @@ def get_exercises_by_user(user_id: int, exercise_date: date, db: Session = Depen
                 "date": user_exercise.date,
                 "userId": user_exercise.user_id,
                 "checked": user_exercise.Checked,
-                "series": user_exercise.repetitions,
-                "repetitions": user_exercise.series,
+                "series": user_exercise.series,
+                "repetitions": user_exercise.repetitions,
                 "optional": user_exercise.Optional,
                 "video_id": exercise.video_link
             })
@@ -237,7 +237,9 @@ def create_user_exercice(user_exercice: schemas.UserExerciceCreate, db: Session 
         exercice_id=user_exercice.exercice_id,
         date=user_exercice.date,
         Optional=user_exercice.Optional,
-        Checked=user_exercice.Checked
+        Checked=user_exercice.Checked,
+        series=user_exercice.series,
+        repetitions=user_exercice.repetitions
     )
     db.add(new_user_exercice)
     db.commit()
